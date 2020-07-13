@@ -1,4 +1,4 @@
-const wordsDiv = document.getElementById('word');
+const wordDiv = document.getElementById('word');
 const wrongLettersDiv = document.getElementById('wrong-letters');
 const playAgainBtn = document.getElementById('play-button');
 const popup = document.getElementById('popup-container');
@@ -8,50 +8,44 @@ const finalMessage = document.getElementById('final-message');
 //Human parts
 const figureParts = document.querySelectorAll('.figure-part');
 
-//Word collection array
-const word = ['india', 'america', 'russia', 'france', 'china'];
+//words array
+const words = ['india', 'russia', 'china', 'america', 'france'];
+let actualWord = words[Math.floor(Math.random() * words.length)];
 
-//Random word selection
-let selectedWord = word[Math.floor(Math.random() * word.length)];
+console.log(actualWord);
 
-// console.log(selectedWord);
+//correct and wrong letters array
+const correctLetters = [];
+const wrongLetters = [];
 
-//Correct and wrong letters array
-const correct = [];
-const wrong = [];
-
-//Display hidden and correct letters
+//display the letters
 function displayLetters() {
-  wordsDiv.innerHTML = `${selectedWord
+  wordDiv.innerHTML = `${actualWord
     .split('')
     .map(
       (letter) =>
-        `<span class="letter">
-             ${correct.includes(letter) ? letter : ''}
-         </span>`
+        `<div class="letter">${
+          correctLetters.includes(letter) ? letter : ' '
+        }</div>`
     )
     .join('')}`;
 
-  const innerWord = wordsDiv.innerText.replace(/\n/g, '');
-
-  if (innerWord === selectedWord) {
-    finalMessage.innerText = 'Congrats..you WON!';
+  if (wordDiv.innerText.replace(/\n/g, '') === actualWord) {
+    finalMessage.innerText = 'Rakshapettu! 😀';
     popup.style.display = 'flex';
   }
 }
 
-//Update wrong letters
-function updateWrongLetters() {
-  //Show wrong letters
-  wrongLettersDiv.innerHTML = `${
-    wrong.length > 0 ? '<p>Wrong</p>' : ''
-  }${wrong.map((letter) => `<span>${letter}</span>`)}`;
+//display correct letters
+function displayWrongLetters() {
+  const wrongLettersLength = wrongLetters.length;
+
+  wrongLettersDiv.innerHTML = `${wrongLettersLength > 0 ? `<p>Wrong</p>` : ''} 
+      ${wrongLetters.map((letter) => `<span>${letter}</span>`)}`;
 
   //Show parts
   figureParts.forEach((part, i) => {
-    const err = wrong.length;
-
-    if (i < err) {
+    if (i < wrongLettersLength) {
       part.style.display = 'block';
     } else {
       part.style.display = 'none';
@@ -59,8 +53,8 @@ function updateWrongLetters() {
   });
 
   //Check if lost
-  if (wrong.length === figureParts.length) {
-    finalMessage.innerText = 'You lost man!';
+  if (wrongLettersLength === figureParts.length) {
+    finalMessage.innerText = `RIP! 😔`;
     popup.style.display = 'flex';
   }
 }
@@ -68,47 +62,47 @@ function updateWrongLetters() {
 //Show notification
 function showNotification() {
   notification.classList.add('show');
-
   setTimeout(() => {
     notification.classList.remove('show');
   }, 3000);
 }
 
-//Keypress event
-window.addEventListener('keydown', (e) => {
+function wordInput(e) {
   if (e.keyCode >= 65 && e.keyCode <= 90) {
-    const letter = e.key;
-    // console.log(letter);
+    const inputLetter = e.key;
 
-    if (selectedWord.includes(letter)) {
-      if (!correct.includes(letter)) {
-        correct.push(letter);
+    if (actualWord.includes(inputLetter)) {
+      if (!correctLetters.includes(inputLetter)) {
+        correctLetters.push(inputLetter);
         displayLetters();
       } else {
         showNotification();
       }
     } else {
-      if (!wrong.includes(letter)) {
-        wrong.push(letter);
-        updateWrongLetters();
+      if (!wrongLetters.includes(inputLetter)) {
+        wrongLetters.push(inputLetter);
+        displayWrongLetters();
       } else {
         showNotification();
       }
     }
   }
-});
+}
 
-//Restart game
+//Event listeners
+window.addEventListener('keydown', wordInput);
 playAgainBtn.addEventListener('click', () => {
-  //Empty the arrays
-  correct.splice(0);
-  wrong.splice(0);
+  //Clear arrays
+  correctLetters.splice(0);
+  wrongLetters.splice(0);
 
-  selectedWord = word[Math.floor(Math.random() * word.length)];
+  //Randomise
+  actualWord = words[Math.floor(Math.random() * words.length)];
+
   displayLetters();
+  displayWrongLetters();
 
-  updateWrongLetters();
-
+  //Close popup
   popup.style.display = 'none';
 });
 
